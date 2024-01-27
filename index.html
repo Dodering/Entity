@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: url('image.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <title>Entité aquatique confinée avec liens flexibles</title>
+</head>
+<body>
+
+<canvas id="aquatic-entity"></canvas>
+
+<script>
+    const canvas = document.getElementById('aquatic-entity');
+    const ctx = canvas.getContext('2d');
+
+    // Ajustez la taille du canvas pour correspondre à la taille de la fenêtre
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const confinementWidth = 300;
+    const confinementHeight = 200;
+
+    const numPoints = 30;
+    const points = [];
+
+    // Initialisation des points centrés sur la page
+    for (let i = 0; i < numPoints; i++) {
+        points.push({
+            x: canvas.width / 2 + Math.random() * confinementWidth - confinementWidth / 2,
+            y: canvas.height / 2 + Math.random() * confinementHeight - confinementHeight / 2,
+            radius: Math.random() * 5 + 2,
+            angle: Math.random() * Math.PI * 2,
+            speed: Math.random() * 0.5 + 0.1
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (const point of points) {
+            // Mise à jour de la position
+            point.x += Math.cos(point.angle) * point.speed;
+            point.y += Math.sin(point.angle) * point.speed;
+
+            // Rebondir aux bords du rectangle de confinement
+            if (point.x < canvas.width / 2 - confinementWidth / 2 || point.x > canvas.width / 2 + confinementWidth / 2) {
+                point.angle = Math.PI - point.angle;
+            }
+
+            if (point.y < canvas.height / 2 - confinementHeight / 2 || point.y > canvas.height / 2 + confinementHeight / 2) {
+                point.angle = -point.angle;
+            }
+
+            // Dessin du point
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+            ctx.closePath();
+
+            // Dessin des liens flexibles avec d'autres points
+            for (const otherPoint of points) {
+                if (point !== otherPoint) {
+                    const distance = Math.hypot(point.x - otherPoint.x, point.y - otherPoint.y);
+
+                    // Dessin du lien flexible
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(otherPoint.x, otherPoint.y);
+                    ctx.strokeStyle = `rgba(0, 0, 255, ${1 - distance / 100})`;
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    // Appeler la fonction draw pour l'animation
+    draw();
+
+    // Redimensionnement du canvas lorsque la fenêtre est redimensionnée
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+</script>
+
+</body>
+</html>
